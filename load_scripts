@@ -9,12 +9,13 @@ if [[ -z $SCRIPTS_DIR ]]; then
   SCRIPTS_DIR="$HOME/Documents/Scripts"
 fi
 
+IGNORED_FILES=("README.md" "LICENSE" "TIMESTAMP")
 # Ensure the directory exists and is a directory
 if [[ -d $SCRIPTS_DIR ]]; then
   # Iterate over .sh, .command files and files without extension in the directory
   for script in "$SCRIPTS_DIR"/*{,.sh,.command,.source}; do
-    # Skip README.md and LICENSE
-    if [[ $(basename -- "$script") == "README.md" || $(basename -- "$script") == "LICENSE" ]]; then
+    # Skip README.md, LICENSE, TIMESTAMP
+    if [[ " ${IGNORED_FILES[@]} " =~ " $(basename -- "$script") " ]]; then
       continue
     fi
     # Check if the file exists to avoid errors in case of null globbing
