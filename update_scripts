@@ -48,11 +48,11 @@ if [ $? -ne 0 ]; then
     gpg --keyserver "hkps://keyserver.ubuntu.com" --recv-keys "B5690EEEBB952194" # Download GitHub's GPG key
     git -C $SCRIPTS_DIR verify-commit HEAD
     if [ $? -ne 0 ]; then
-        echo "WARNING: Last commit is not signed by a verified GPG key. Script loading aborted."
+        echo "WARNING: Last commit is not signed by a known GPG key. Refusing to load scripts."
         # pause for 5 seconds
         sleep 5
-        chmod a-rwx "$SCRIPTS_DIR/*"
         mv "$SCRIPTS_DIR/load_scripts" "$SCRIPTS_DIR/load_scripts.bak"
+        chmod a-rwx "$SCRIPTS_DIR/"
         # export $SCRIPTS_DIR to empty and $SCRIPTS_NOLOAD to prevent further script loading
         export SCRIPTS_DIR=""
         export SCRIPTS_NOLOAD="1"

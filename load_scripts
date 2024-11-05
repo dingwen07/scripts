@@ -9,7 +9,7 @@ if [[ -z $SCRIPTS_DIR ]]; then
   SCRIPTS_DIR="$HOME/Documents/Scripts"
 fi
 
-IGNORED_FILES=("README.md" "LICENSE" "TIMESTAMP")
+IGNORED_FILES=("README.md" "LICENSE" "TIMESTAMP" "install.sh")
 # Ensure the directory exists and is a directory
 if [[ -d $SCRIPTS_DIR ]]; then
   # Iterate over .sh, .command files and files without extension in the directory
