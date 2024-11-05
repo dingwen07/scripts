@@ -4,7 +4,7 @@
 set timeout 20
 
 # Retrieve the password securely from 1Password
-set password [exec op read "op://Personal/UMD Directory ID/password"]
+set password [exec op.exe read "op://Personal/UMD Directory ID/password"]
 
 # Start the SSH session
 spawn ssh -A dingwen@grace.umd.edu
@@ -19,7 +19,7 @@ send "$password\r"
 if { $argc > 0 } {
     set duo_passcode [lindex $argv 0]
 } else {
-    set duo_passcode [exec op read "op://Personal/UMD Directory ID/one-time password?attribute=otp"]
+    set duo_passcode [exec op.exe read "op://Personal/UMD Directory ID/one-time password?attribute=otp"]
 }
 
 # Check if a Duo Passcode needs to be sent
