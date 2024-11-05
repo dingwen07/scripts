@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Configurations
+OP_CLI="op"
 HASH_UTIL="sha256sum"
 OP_VAULT_ID="Personal"
 OP_ITEM_NAME="Personal Hashes Reference"
@@ -9,9 +10,9 @@ OP_ITEM_FIELD_TYPE="password"
 
 # Pre-execution checks
 # Check if the item exists
-if ! op item get "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" > /dev/null 2>&1; then
+if ! $OP_CLI item get "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" > /dev/null 2>&1; then
     echo "Item '$OP_ITEM_NAME' not found in vault '$OP_VAULT_ID', creating..." >&2
-    if ! op item create --category "$OP_ITEM_CATEGORY" --title "$OP_ITEM_NAME" --vault "$OP_VAULT_ID"; then
+    if ! $OP_CLI item create --category "$OP_ITEM_CATEGORY" --title "$OP_ITEM_NAME" --vault "$OP_VAULT_ID"; then
         echo "Failed to create item '$OP_ITEM_NAME' in vault '$OP_VAULT_ID'" >&2
         exit 2
     fi
@@ -33,7 +34,7 @@ add_hash() {
     fi
     echo "Adding hash '$hash' with value $escaped_value to item '$OP_ITEM_NAME' from vault '$OP_VAULT_ID'..." >&2
     # value=$(echo -n "$value" | base64)
-    if ! op item edit "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" "$hash[$OP_ITEM_FIELD_TYPE]=$value" > /dev/null; then
+    if ! $OP_CLI item edit "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" "$hash[$OP_ITEM_FIELD_TYPE]=$value" > /dev/null; then
         echo "Failed to add hash '$hash' to item '$OP_ITEM_NAME'" >&2
         exit 2
     fi
@@ -43,7 +44,7 @@ add_hash() {
 lookup_hash() {
     local hash=$1
     echo "Looking up hash '$hash' in item '$OP_ITEM_NAME' from vault '$OP_VAULT_ID'..." >&2
-    value=$(op read op://"$OP_VAULT_ID"/"$OP_ITEM_NAME"/"$hash")
+    value=$($OP_CLI read op://"$OP_VAULT_ID"/"$OP_ITEM_NAME"/"$hash")
     if [ -z "$value" ]; then
         echo "Hash '$hash' not found in item '$OP_ITEM_NAME' from vault '$OP_VAULT_ID'" >&2
         exit 2
