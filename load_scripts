@@ -1,0 +1,57 @@
+# if $SCRIPTS_NOLOAD is set, exit
+if [ -n "$SCRIPTS_NOLOAD" ]; then
+  return 0
+fi
+
+# Configure script directory, only redefine if not already set
+if [[ -z $SCRIPTS_DIR ]]; then
+  echo "SCRIPTS_DIR not set, using default directory: $HOME/Documents/Scripts" >&2
+  SCRIPTS_DIR="$HOME/Documents/Scripts"
+fi
+
+# Ensure the directory exists and is a directory
+if [[ -d $SCRIPTS_DIR ]]; then
+  # Iterate over .sh, .command files and files without extension in the directory
+  for script in "$SCRIPTS_DIR"/*{,.sh,.command,.source}; do
+    # Check if the file exists to avoid errors in case of null globbing
+    if [[ -e $script ]]; then
+      # Add execute permissions to the script
+      chmod +x "$script"
+
+      # Extract the filename without path
+      filename=$(basename -- "$script")
+
+      # Determine the alias based on the file extension
+      case "$filename" in
+        *.sh)
+          # Remove the .sh extension for alias
+          alias_name="${filename%.*}"
+          # Create an alias to run the script with all passed arguments
+          alias $alias_name="$script \$@"
+          ;;
+        *.command)
+          # For .command files, use the full filename in the alias
+          alias $filename="$script \$@"
+          ;;
+        *.source)
+          # Source the file immediately
+          # source $script
+          # For .source files, source the full filename in the alias
+          alias_name="${filename%.*}"
+          alias $alias_name="source $script \$@"
+          ;;
+        *)
+          # For files without an extension
+          if [[ $filename != *.* ]]; then
+            alias $filename="$script \$@"
+          fi
+          ;;
+      esac
+    fi
+  done
+  # Alias load_scripts
+  unalias $(basename -- "$0") 2>/dev/null
+  alias $(basename -- "$0")="source $0"
+else
+  echo "Script directory $SCRIPTS_DIR does not exist."
+fi
