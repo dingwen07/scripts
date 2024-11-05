@@ -13,7 +13,7 @@ IGNORED_FILES=("README.md" "LICENSE" "TIMESTAMP" "install.sh")
 # Ensure the directory exists and is a directory
 if [[ -d $SCRIPTS_DIR ]]; then
   # Iterate over .sh, .command files and files without extension in the directory
-  for script in "$SCRIPTS_DIR"/*{,.sh,.command,.source}; do
+  for script in "$SCRIPTS_DIR"/*{.sh,.command,.source}; do
     # Skip README.md, LICENSE, TIMESTAMP
     if [[ " ${IGNORED_FILES[@]} " =~ " $(basename -- "$script") " ]]; then
       continue
@@ -45,18 +45,16 @@ if [[ -d $SCRIPTS_DIR ]]; then
           alias_name="${filename%.*}"
           alias $alias_name="source $script \$@"
           ;;
-        *)
-          # For files without an extension
-          if [[ $filename != *.* ]]; then
-            alias $filename="$script \$@"
-          fi
-          ;;
       esac
     fi
   done
-  # Alias load_scripts
+  # Alias load_scripts and update_scripts
   unalias $(basename -- "$0") 2>/dev/null
   alias $(basename -- "$0")="source $0"
+  chmod +x "$SCRIPTS_DIR/load_scripts"
+  unalias update_scripts 2>/dev/null
+  alias update_scripts="source $SCRIPTS_DIR/update_scripts"
+  chmod +x "$SCRIPTS_DIR/update_scripts"
 else
   echo "Script directory $SCRIPTS_DIR does not exist."
 fi
