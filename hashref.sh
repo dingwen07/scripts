@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configurations
-OP_CLI="op"
+OP_CLI="op.exe"
 HASH_UTIL="sha256sum"
 OP_VAULT_ID="Personal"
 OP_ITEM_NAME="Personal Hashes Reference"
