@@ -43,7 +43,9 @@ fi
 git -C $SCRIPTS_DIR verify-commit HEAD
 if [ $? -ne 0 ]; then
     echo "WARNING: Scripts Repository is not signed by a verified GPG key. Script loading aborted."
-    chmod a-rwx "$SCRIPTS_DIR/*.*"
+    # pause for 5 seconds
+    sleep 5
+    chmod a-rwx "$SCRIPTS_DIR/*"
     mv "$SCRIPTS_DIR/load_scripts" "$SCRIPTS_DIR/load_scripts.bak"
     # export $SCRIPTS_DIR to empty and $SCRIPTS_NOLOAD to prevent further script loading
     export SCRIPTS_DIR=""
