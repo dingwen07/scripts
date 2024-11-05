@@ -13,7 +13,7 @@ IGNORED_FILES=("README.md" "LICENSE" "TIMESTAMP" "install.sh")
 # Ensure the directory exists and is a directory
 if [[ -d $SCRIPTS_DIR ]]; then
   # Iterate over .sh, .command files and files without extension in the directory
-  for script in "$SCRIPTS_DIR"/*{.sh,.command,.source}; do
+  for script in "$SCRIPTS_DIR"/*{.sh,.command,.source,.profile}; do
     # Skip README.md, LICENSE, TIMESTAMP
     if [[ " ${IGNORED_FILES[@]} " =~ " $(basename -- "$script") " ]]; then
       continue
@@ -39,12 +39,13 @@ if [[ -d $SCRIPTS_DIR ]]; then
           alias $filename="$script \$@"
           ;;
         *.source)
-          # Source the file immediately
-          # source $script
           # For .source files, source the full filename in the alias
           alias_name="${filename%.*}"
           alias $alias_name="source $script \$@"
           ;;
+        *.profile)
+          # For .profile files, source the file immediately
+          source $script
       esac
     fi
   done
