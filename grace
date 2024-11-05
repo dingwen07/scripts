@@ -7,7 +7,7 @@ set timeout 20
 set password [exec op read "op://Personal/UMD Directory ID/password"]
 
 # Start the SSH session
-spawn ssh -A grace.umd.edu
+spawn ssh -A dingwen@grace.umd.edu
 
 # Wait for the password prompt
 expect "Password:"
