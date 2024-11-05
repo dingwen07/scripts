@@ -40,7 +40,7 @@ if [ $(find "$SCRIPTS_DIR/timestamp" -mtime +$REFRESH_INTERVAL) ]; then
 fi
 
 # Security check: check if last git commit is signed by a GPG key trusted by the system
-git -C $SCRIPTS_DIR verify-commit HEAD
+git -C $SCRIPTS_DIR verify-commit HEAD 2>/dev/null
 if [ $? -ne 0 ]; then
     echo "WARNING: Scripts Repository is not signed by a verified GPG key. Script loading aborted."
     # pause for 5 seconds
