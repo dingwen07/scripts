@@ -25,7 +25,7 @@ if [ ! -f "$TIMESTAMP_FILE" ]; then
 fi
 
 # git checkout $GIT_BRANCH
-git -C $SCRIPTS_DIR checkout $GIT_BRANCH
+git -C $SCRIPTS_DIR checkout $GIT_BRANCH > /dev/null 2>&1
 # continue if successful
 if [ $? -ne 0 ]; then
     echo "ERROR: Could not checkout branch $GIT_BRANCH"
@@ -35,7 +35,7 @@ fi
 # Check if the timestamp file is older than REFRESH_INTERVAL days or SCRIPTS_REFRESH is set
 # if so, git pull
 if [ $(find "$TIMESTAMP_FILE" -type f -mtime +$REFRESH_INTERVAL) ] || [ "$SCRIPTS_REFRESH" ]; then
-    git -C $SCRIPTS_DIR pull
+    git -C $SCRIPTS_DIR pull > /dev/null 2>&1
     # touch the timestamp file if successful
     if [ $? -eq 0 ]; then
         touch "$TIMESTAMP_FILE"
