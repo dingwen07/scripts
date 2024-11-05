@@ -16,38 +16,45 @@ fi
 # Read config file $SCRIPTS_CONFIG_DIR/scripts.conf
 CONFIG_FILE="$SCRIPTS_CONFIG_DIR/scripts.conf"
 source $CONFIG_FILE
+TIMESTAMP_FILE="$SCRIPTS_DIR/TIMESTAMP"
 
-# check if SCRIPTS_DIR/timestamp exists
-# if not, touch it
-if [ ! -f "$SCRIPTS_DIR/timestamp" ]; then
-    touch "$SCRIPTS_DIR/timestamp"
+# check if TIMESTAMP_FILE exists
+if [ ! -f "$TIMESTAMP_FILE" ]; then
+    touch "$TIMESTAMP_FILE"
+    SCRIPTS_REFRESH=true
 fi
 
-# Check if the timestamp file is older than REFRESH_INTERVAL days
-# if so, git checkout $GIT_BRANCH and git pull
-if [ $(find "$SCRIPTS_DIR/timestamp" -mtime +$REFRESH_INTERVAL) ]; then
-    git -C $SCRIPTS_DIR checkout $GIT_BRANCH
-    # continue if successful
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Could not checkout branch $GIT_BRANCH"
-        return 1
-    fi
+# git checkout $GIT_BRANCH
+git -C $SCRIPTS_DIR checkout $GIT_BRANCH
+# continue if successful
+if [ $? -ne 0 ]; then
+    echo "ERROR: Could not checkout branch $GIT_BRANCH"
+    return 1
+fi
+
+# Check if the timestamp file is older than REFRESH_INTERVAL days or SCRIPTS_REFRESH is set
+# if so, git pull
+if [ $(find "$TIMESTAMP_FILE" -type f -mtime +$REFRESH_INTERVAL) ] || [ "$SCRIPTS_REFRESH" ]; then
     git -C $SCRIPTS_DIR pull
     # touch the timestamp file if successful
     if [ $? -eq 0 ]; then
-        touch "$SCRIPTS_DIR/timestamp"
+        touch "$TIMESTAMP_FILE"
     fi
 fi
 
 # Security check: check if last git commit is signed by a GPG key trusted by the system
 git -C $SCRIPTS_DIR verify-commit HEAD 2>/dev/null
 if [ $? -ne 0 ]; then
-    echo "WARNING: Scripts Repository is not signed by a verified GPG key. Script loading aborted."
-    # pause for 5 seconds
-    sleep 5
-    chmod a-rwx "$SCRIPTS_DIR/*"
-    mv "$SCRIPTS_DIR/load_scripts" "$SCRIPTS_DIR/load_scripts.bak"
-    # export $SCRIPTS_DIR to empty and $SCRIPTS_NOLOAD to prevent further script loading
-    export SCRIPTS_DIR=""
-    export SCRIPTS_NOLOAD="1"
+    gpg --keyserver "hkps://keyserver.ubuntu.com" --recv-keys "B5690EEEBB952194" # Download GitHub's GPG key
+    git -C $SCRIPTS_DIR verify-commit HEAD
+    if [ $? -ne 0 ]; then
+        echo "WARNING: Last commit is not signed by a verified GPG key. Script loading aborted."
+        # pause for 5 seconds
+        sleep 5
+        chmod a-rwx "$SCRIPTS_DIR/*"
+        mv "$SCRIPTS_DIR/load_scripts" "$SCRIPTS_DIR/load_scripts.bak"
+        # export $SCRIPTS_DIR to empty and $SCRIPTS_NOLOAD to prevent further script loading
+        export SCRIPTS_DIR=""
+        export SCRIPTS_NOLOAD="1"
+    fi
 fi
