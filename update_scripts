@@ -24,21 +24,26 @@ if [ ! -f "$TIMESTAMP_FILE" ]; then
     SCRIPTS_REFRESH=true
 fi
 
-# git checkout $GIT_BRANCH
-git -C $SCRIPTS_DIR checkout $GIT_BRANCH > /dev/null 2>&1
-# continue if successful
-if [ $? -ne 0 ]; then
-    echo "ERROR: Could not checkout branch $GIT_BRANCH"
-    return 1
+# git checkout $GIT_BRANCH if not already on that branch
+CURRENT_BRANCH=$(git -C $SCRIPTS_DIR rev-parse --abbrev-ref HEAD)
+if [ "$CURRENT_BRANCH" != "$GIT_BRANCH" ]; then
+    git -C $SCRIPTS_DIR checkout $GIT_BRANCH
+    # continue if successful
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Could not checkout branch $GIT_BRANCH"
+        return 1
+    fi
 fi
 
 # Check if the timestamp file is older than REFRESH_INTERVAL days or SCRIPTS_REFRESH is set
 # if so, git pull
 if [ $(find "$TIMESTAMP_FILE" -type f -mtime +$REFRESH_INTERVAL) ] || [ "$SCRIPTS_REFRESH" ]; then
+    touch "$TIMESTAMP_FILE"
     git -C $SCRIPTS_DIR pull > /dev/null 2>&1
-    # touch the timestamp file if successful
-    if [ $? -eq 0 ]; then
-        touch "$TIMESTAMP_FILE"
+    # remove TIMESTAMP_FILE if git pull failed
+    if [ $? -ne 0 ]; then
+        rm "$TIMESTAMP_FILE"
+        return 1
     fi
 fi
 
@@ -49,8 +54,8 @@ if [ $? -ne 0 ]; then
     git -C $SCRIPTS_DIR verify-commit HEAD
     if [ $? -ne 0 ]; then
         echo "WARNING: Last commit is not signed by a known GPG key. Refusing to load scripts."
-        # pause for 5 seconds
-        sleep 5
+        # pause for 30 seconds
+        sleep 30
         mv "$SCRIPTS_DIR/load_scripts" "$SCRIPTS_DIR/load_scripts.bak"
         chmod a-rwx "$SCRIPTS_DIR/"
         # export $SCRIPTS_DIR to empty and $SCRIPTS_NOLOAD to prevent further script loading
