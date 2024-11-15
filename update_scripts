@@ -39,6 +39,8 @@ fi
 # if so, git pull
 if [ $(find "$TIMESTAMP_FILE" -type f -mtime +$REFRESH_INTERVAL) ] || [ "$SCRIPTS_REFRESH" ]; then
     touch "$TIMESTAMP_FILE"
+    # stash local changes
+    git -C $SCRIPTS_DIR stash > /dev/null 2>&1
     git -C $SCRIPTS_DIR pull > /dev/null 2>&1
     # remove TIMESTAMP_FILE if git pull failed
     if [ $? -ne 0 ]; then
