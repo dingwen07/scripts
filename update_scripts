@@ -56,10 +56,6 @@ if [ $? -ne 0 ]; then
     git -C $SCRIPTS_DIR verify-commit HEAD
     if [ $? -ne 0 ]; then
         echo "WARNING: Last commit is not signed by a known GPG key. Refusing to load scripts."
-        # pause for 30 seconds
-        sleep 30
-        mv "$SCRIPTS_DIR/load_scripts" "$SCRIPTS_DIR/load_scripts.bak"
-        chmod a-rwx "$SCRIPTS_DIR/"
         # export $SCRIPTS_DIR to empty and $SCRIPTS_NOLOAD to prevent further script loading
         export SCRIPTS_DIR=""
         export SCRIPTS_NOLOAD="1"
