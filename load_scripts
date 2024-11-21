@@ -14,17 +14,16 @@ IGNORED_FILES=("README.md" "LICENSE" "TIMESTAMP" "install.sh")
 if [[ -d $SCRIPTS_DIR ]]; then
   # Iterate over .sh, .command files and files without extension in the directory
   for script in "$SCRIPTS_DIR"/*{.sh,.command,.source,.profile}; do
-    # Skip README.md, LICENSE, TIMESTAMP
-    if [[ " ${IGNORED_FILES[@]} " =~ " $(basename -- "$script") " ]]; then
-      continue
-    fi
     # Check if the file exists to avoid errors in case of null globbing
     if [[ -e $script ]]; then
-      # Add execute permissions to the script
-      chmod +x "$script"
-
       # Extract the filename without path
       filename=$(basename -- "$script")
+      # Skip README.md, LICENSE, TIMESTAMP
+      if [[ " ${IGNORED_FILES[@]} " =~ " ${filename} " ]]; then
+        continue
+      fi
+      # Add execute permissions to the script
+      chmod +x "$script"
 
       # Determine the alias based on the file extension
       case "$filename" in
@@ -50,9 +49,10 @@ if [[ -d $SCRIPTS_DIR ]]; then
     fi
   done
   # Alias load_scripts and update_scripts
-  unalias $(basename -- "$0") 2>/dev/null
-  alias $(basename -- "$0")="source $0"
-  chmod +x "$SCRIPTS_DIR/load_scripts"
+  LS_BASENAME=$(basename -- "$0")
+  unalias $LS_BASENAME 2>/dev/null
+  alias $LS_BASENAME="source $0"
+  chmod +x "$0"
   unalias update_scripts 2>/dev/null
   alias update_scripts="source $SCRIPTS_DIR/update_scripts"
   chmod +x "$SCRIPTS_DIR/update_scripts"
