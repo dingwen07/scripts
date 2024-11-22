@@ -86,6 +86,10 @@ source ${hosts[$host]}
 while lsof -Pi :$port -sTCP:LISTEN -t >/dev/null; do
     echo "$loopback:$port is not available, trying next port..."
     echo "Note: Edit config to use a dedicated loopback and port for each host."
+    # if CFD_RDP_NO_PORT_INCREMENT is set, exit
+    if [ -z "$CFD_RDP_NO_PORT_INCREMENT" ]; then
+        break
+    fi
     port=$((port+1))
 done
 
