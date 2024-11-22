@@ -70,10 +70,13 @@ do
     unset name
 done
 
-# ask user to select host
-echo ""
-echo "Select host:"
-read host
+# ask user to select host, if not provided in the first argument
+if [ -z "$1" ]; then
+    echo ""
+    read -p "Select host: " host
+else
+    host=$1
+fi
 
 # source configuration file
 source ${hosts[$host]}
