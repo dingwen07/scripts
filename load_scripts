@@ -31,16 +31,20 @@ if [[ -d $SCRIPTS_DIR ]]; then
           # Remove the .sh extension for alias
           alias_name="${filename%.*}"
           # Create an alias to run the script with all passed arguments
-          alias $alias_name="$script \$@"
+          alias $alias_name="$script"
+          shell_basename=$(basename -- "$SHELL")
+          if [[ -e "$script.comp.$shell_basename" ]]; then
+            source "$script.comp.$shell_basename"
+          fi
           ;;
         *.command)
           # For .command files, use the full filename in the alias
-          alias $filename="$script \$@"
+          alias $filename="$script"
           ;;
         *.source)
           # For .source files, source the full filename in the alias
           alias_name="${filename%.*}"
-          alias $alias_name="source $script \$@"
+          alias $alias_name="source $script"
           ;;
         *.profile)
           # For .profile files, source the file immediately
