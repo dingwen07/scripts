@@ -44,7 +44,7 @@ add_key() {
         escaped_value=$(echo -n "$escaped_value" | cut -c 1-256)...
     fi
     echo "Adding key '$key' with value $escaped_value to item '$OP_ITEM_NAME' from vault '$OP_VAULT_ID'..." >&2
-    if ! $OP_CLI item edit "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" "$key_encoded[$OP_ITEM_FIELD_TYPE]=$value" > /dev/null; then
+    if ! $OP_CLI item edit "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" "$key_encoded[$OP_ITEM_FIELD_TYPE]=$value" < /dev/null > /dev/null; then
         echo "Failed to add key '$key' to item '$OP_ITEM_NAME'" >&2
         exit 2
     fi
@@ -59,50 +59,62 @@ lookup_key() {
     value=$($OP_CLI read op://"$OP_VAULT_ID"/"$OP_ITEM_NAME"/"$key_encoded")
     if [ -z "$value" ]; then
         echo "Key '$key' not found in item '$OP_ITEM_NAME' from vault '$OP_VAULT_ID'" >&2
-        exit 2
+        return 2
     fi
     base64 -d <<< "$value"
     if [ $? -ne 0 ]; then
         echo "Failed to decode value '$value'" >&2
-        exit 3
+        return 3
     fi
 }
 
 remove_key() {
     local key=$1
-    lookup_key "$key"
+    lookup_key "$key" > /dev/null
     ret=$?
     if [ $ret -ne 0 ] && [ $ret -ne 3 ]; then
-        exit 2
+        return 2
     fi
     key_encoded=$(base32 <<< "$key")
     key_encoded=$(escape_equals "$key_encoded")
     echo "Removing key '$key' from item '$OP_ITEM_NAME' from vault '$OP_VAULT_ID'..." >&2
-    if ! $OP_CLI item edit "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" "$ket_encoded[delete]=" > /dev/null; then
+    if ! $OP_CLI item edit "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" "$key_encoded[delete]=" < /dev/null > /dev/null; then
         echo "Failed to remove key '$key' from item '$OP_ITEM_NAME'" >&2
-        exit 2
+        return 2
     fi
+    echo $key
 }
 
 lookup_key_stdin() {
     # Accept key from stdin and lookup the value in the item
+    err=0
     while read key; do
         lookup_key "$key"
+        if [ $? -ne 0 ]; then
+            err=4
+        fi
     done
+    return $err
 }
 
 remove_key_stdin() {
     # Accept key from stdin and remove the key from the item
+    err=0
     while read key; do
         remove_key "$key"
+        if [ $? -ne 0 ]; then
+            err=4
+        fi
     done
+    return $err
 }
+
 
 # Pre-execution checks
 # Check if the item exists
-if ! $OP_CLI item get "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" > /dev/null 2>&1; then
+if ! $OP_CLI item get "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" < /dev/null > /dev/null 2>&1; then
     echo "Item '$OP_ITEM_NAME' not found in vault '$OP_VAULT_ID', creating..." >&2
-    if ! $OP_CLI item create --category "$OP_ITEM_CATEGORY" --title "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" < /dev/null; then
+    if ! $OP_CLI item create --category "$OP_ITEM_CATEGORY" --title "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" < /dev/null >&2; then
         echo "Failed to create item '$OP_ITEM_NAME' in vault '$OP_VAULT_ID'" >&2
         exit 2
     fi
@@ -160,3 +172,10 @@ case "$#" in
         exit 1
         ;;
 esac
+
+# Return value:
+# 0: Success
+# 1: Invalid arguments
+# 2: 1Password CLI operation failed
+# 3: Base64 decoding failed
+# 4: Exception in batch operation
