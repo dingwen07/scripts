@@ -35,5 +35,6 @@ _hashref() {
 # Bind the function to the `hashref` command
 compdef _hashref hashref
 compfile_name=$(basename "$0")
+script_dirname=$(dirname "$0")
 script_name="${compfile_name%%.comp.*}"
-compdef _hashref "$(pwd)/$script_name"
+compdef _hashref "$script_dirname/$script_name"
