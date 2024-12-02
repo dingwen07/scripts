@@ -35,4 +35,4 @@ _keyval() {
 
 # Bind the function to the `keyval` command
 compdef _keyval keyval
-compdef _keyval $(realpath keyval.sh)
+compdef _keyval $(realpath $(which keyval))
