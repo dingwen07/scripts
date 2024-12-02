@@ -34,4 +34,4 @@ _hashref() {
 
 # Bind the function to the `hashref` command
 compdef _hashref hashref
-compdef _hashref $(realpath hashref.sh)
+compdef _hashref $(realpath $(which hashref))
