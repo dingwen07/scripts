@@ -13,16 +13,6 @@ if [ -n "$HASHREF_ITEM" ]; then
     OP_ITEM_NAME="$HASHREF_ITEM_NAME"
 fi
 
-# Pre-execution checks
-# Check if the item exists
-if ! $OP_CLI item get "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" > /dev/null 2>&1; then
-    echo "Item '$OP_ITEM_NAME' not found in vault '$OP_VAULT_ID', creating..." >&2
-    if ! $OP_CLI item create --category "$OP_ITEM_CATEGORY" --title "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" < /dev/null; then
-        echo "Failed to create item '$OP_ITEM_NAME' in vault '$OP_VAULT_ID'" >&2
-        exit 2
-    fi
-fi
-
 # Helper functions
 print_escaped() {
     echo -n "$1" | python3 -c "import sys; print(repr(sys.stdin.buffer.read()))"
@@ -52,12 +42,12 @@ lookup_hash() {
     value=$($OP_CLI read op://"$OP_VAULT_ID"/"$OP_ITEM_NAME"/"$hash")
     if [ -z "$value" ]; then
         echo "Hash '$hash' not found in item '$OP_ITEM_NAME' from vault '$OP_VAULT_ID'" >&2
-        exit 2
+        return 2
     fi
     base64 -d <<< "$value"
     if [ $? -ne 0 ]; then
         echo "Failed to decode value '$value'" >&2
-        exit 3
+        return 3
     fi
 }
 
@@ -72,9 +62,14 @@ add_value_stdin() {
 
 lookup_hash_stdin() {
     # Accept hash from stdin and lookup the value in the item
+    err=0
     while read hash; do
         lookup_hash "$hash"
+        if [ $? -ne 0 ]; then
+            err=4
+        fi
     done
+    return $err
 }
 
 remove_hash() {
@@ -83,12 +78,12 @@ remove_hash() {
     lookup_hash "$hash" > /dev/null
     ret=$?
     if [ $ret -ne 0 ] && [ $ret -ne 3 ]; then
-        exit 2
+        return 2
     fi
     echo "Removing hash '$hash' from item '$OP_ITEM_NAME' from vault '$OP_VAULT_ID'..." >&2
     if ! $OP_CLI item edit "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" "$hash[delete]=" < /dev/null > /dev/null; then
         echo "Failed to remove hash '$hash' from item '$OP_ITEM_NAME'" >&2
-        exit 2
+        return 2
     fi
     echo $hash
 }
@@ -113,10 +108,26 @@ remove_value_stdin() {
 
 remove_hash_stdin() {
     # Accept hash from stdin and remove the value from the item
+    err=0
     while read hash; do
         remove_hash "$hash"
+        if [ $? -ne 0 ]; then
+            err=4
+        fi
     done
+    return $err
 }
+
+
+# Pre-execution checks
+# Check if the item exists
+if ! $OP_CLI item get "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" < /dev/null > /dev/null 2>&1; then
+    echo "Item '$OP_ITEM_NAME' not found in vault '$OP_VAULT_ID', creating..." >&2
+    if ! $OP_CLI item create --category "$OP_ITEM_CATEGORY" --title "$OP_ITEM_NAME" --vault "$OP_VAULT_ID" < /dev/null >&2; then
+        echo "Failed to create item '$OP_ITEM_NAME' in vault '$OP_VAULT_ID'" >&2
+        exit 2
+    fi
+fi
 
 # Main execution
 case "$#" in
@@ -192,3 +203,4 @@ esac
 # 1: Invalid arguments
 # 2: 1Password CLI operation failed
 # 3: Base64 decoding failed
+# 4: Exception in batch operation
