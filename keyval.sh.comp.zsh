@@ -35,4 +35,6 @@ _keyval() {
 
 # Bind the function to the `keyval` command
 compdef _keyval keyval
-compdef _keyval $(realpath $(which keyval))
+compfile_name=$(basename "$0")
+script_name="${compfile_name%%.comp.*}"
+compdef _keyval "$(pwd)/$script_name"
