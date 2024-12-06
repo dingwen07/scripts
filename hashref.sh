@@ -10,7 +10,7 @@ OP_ITEM_FIELD_TYPE="password"
 
 # If HASHREF_ITEM is set
 if [ -n "$HASHREF_ITEM" ]; then
-    OP_ITEM_NAME="$HASHREF_ITEM_NAME"
+    OP_ITEM_NAME="$HASHREF_ITEM"
 fi
 
 # Helper functions
