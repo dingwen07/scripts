@@ -10,9 +10,8 @@ OP_ITEM_FIELD_TYPE="password"
 
 # If KEYVAL_ITEM is set
 if [ -n "$KEYVAL_ITEM" ]; then
-    OP_ITEM_NAME="$KEYVAL_ITEM_NAME"
+    OP_ITEM_NAME="$KEYVAL_ITEM"
 fi
-
 
 # Helper functions
 print_escaped() {
