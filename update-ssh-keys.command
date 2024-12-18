@@ -13,12 +13,13 @@ ROAMING_KEYS_DIR="$SCRIPTS_CONFIG_DIR/ssh-keys"
 if [ -z "$SCRIPTS_GITHUB_USERNAME" ]; then
     SCRIPTS_GITHUB_USERNAME="dingwen07"
 fi
+GITHUB_USERNAME=$SCRIPTS_GITHUB_USERNAME
 
 # if $SSH_AUTHORIZED_KEYS is not set, use default "$HOME/.ssh/authorized_keys"
 if [ -z "$SCRIPTS_SSH_AUTHORIZED_KEYS" ]; then
     SCRIPTS_SSH_AUTHORIZED_KEYS="$HOME/.ssh/authorized_keys"
 fi
-
+SSH_AUTHORIZED_KEYS=$SCRIPTS_SSH_AUTHORIZED_KEYS
 
 echo "This script will modify $SSH_AUTHORIZED_KEYS with keys from following sources:"
 echo " - GitHub Account: $GITHUB_USERNAME"
