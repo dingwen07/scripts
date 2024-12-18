@@ -18,7 +18,7 @@ fi
 if [ -z "$SCRIPTS_SSH_AUTHORIZED_KEYS" ]; then
     SCRIPTS_SSH_AUTHORIZED_KEYS="$HOME/.ssh/authorized_keys"
 fi
-
+SSH_AUTHORIZED_KEYS=$SCRIPTS_SSH_AUTHORIZED_KEYS
 
 echo "This script will modify $SSH_AUTHORIZED_KEYS with keys from following sources:"
 echo " - GitHub Account: $GITHUB_USERNAME"
