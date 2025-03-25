@@ -4,7 +4,7 @@
 set timeout 20
 
 # Retrieve the password securely from 1Password
-set password [exec op.exe read "op://Personal/NYU Courant Account/password"]
+set password [exec op.exe read "op://Personal/67slu4lrsqp7j6uxsj35qvl4pa/password"]
 
 # Start the SSH session
 spawn ssh -A dw3295@access.cims.nyu.edu
