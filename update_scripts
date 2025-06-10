@@ -56,7 +56,7 @@ if [ $? -ne 0 ]; then
     git -C $SCRIPTS_DIR verify-commit HEAD
     if [ $? -ne 0 ]; then
         echo "WARNING: Last commit is not signed by a known GPG key. Refusing to load scripts."
-        # export $SCRIPTS_DIR to empty and $SCRIPTS_NOLOAD to prevent further script loading
+        chmod a-rwx $SCRIPTS_DIR
         export SCRIPTS_DIR=""
         export SCRIPTS_NOLOAD="1"
     fi
