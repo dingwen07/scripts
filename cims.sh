@@ -19,7 +19,7 @@ send "$password\r"
 if { $argc > 0 } {
     set duo_passcode [lindex $argv 0]
 } else {
-    set duo_passcode [exec op read "op://Personal/67slu4lrsqp7j6uxsj35qvl4pa/Security/one-time password?attribute=otp"]
+    set duo_passcode [exec op read "op://Personal/m26ohbiibq3rv73rcbpixdzvg4/one-time password?attribute=otp"]
 }
 
 # Check if a Duo Passcode needs to be sent
