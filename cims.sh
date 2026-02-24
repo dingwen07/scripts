@@ -1,13 +1,24 @@
 #!/usr/bin/expect -f
 
+# ---------------------------------
+# CIMS SSH Login Script
+# Configuration:
+set OP_CMD "op"
+set OP_USERNAME "op://Personal/67slu4lrsqp7j6uxsj35qvl4pa/username"
+set OP_PASSWORD "op://Personal/67slu4lrsqp7j6uxsj35qvl4pa/password"
+set OP_DUO_PASSCODE "op://Personal/m26ohbiibq3rv73rcbpixdzvg4/one-time password?attribute=otp"
+# ---------------------------------
+
 # Set the timeout to 20 seconds
 set timeout 20
 
-# Retrieve the password securely from 1Password
-set password [exec op read "op://Personal/67slu4lrsqp7j6uxsj35qvl4pa/password"]
+# Retrieve credentials from 1Password
+set username [exec $OP_CMD read $OP_USERNAME]
+set password [exec $OP_CMD read $OP_PASSWORD]
+set netid [lindex [split $username "@"] 0]
 
 # Start the SSH session
-spawn ssh -A dw3295@access.cims.nyu.edu
+spawn ssh -A -o PreferredAuthentications=password,keyboard-interactive -o PubkeyAuthentication=no $netid@access.cims.nyu.edu
 
 # Wait for the password prompt
 expect "Password:"
@@ -19,7 +30,7 @@ send "$password\r"
 if { $argc > 0 } {
     set duo_passcode [lindex $argv 0]
 } else {
-    set duo_passcode [exec op read "op://Personal/m26ohbiibq3rv73rcbpixdzvg4/one-time password?attribute=otp"]
+    set duo_passcode [exec $OP_CMD read $OP_DUO_PASSCODE]
 }
 
 # Check if a Duo Passcode needs to be sent
