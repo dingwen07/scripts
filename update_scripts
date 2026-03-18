@@ -15,6 +15,15 @@ fi
 
 # Read config file $SCRIPTS_CONFIG_DIR/scripts.conf
 CONFIG_FILE="$SCRIPTS_CONFIG_DIR/scripts.conf"
+
+# Test if config file exists and is readable
+if [ ! -r "$CONFIG_FILE" ]; then
+    echo "ERROR: Config file $CONFIG_FILE does not exist or is not readable." >&2
+    export SCRIPTS_DIR=""
+    export SCRIPTS_NOLOAD="1"
+    return 1
+fi
+
 source $CONFIG_FILE
 TIMESTAMP_FILE="$SCRIPTS_DIR/TIMESTAMP"
 
@@ -31,6 +40,8 @@ if [ "$CURRENT_BRANCH" != "$GIT_BRANCH" ]; then
     # continue if successful
     if [ $? -ne 0 ]; then
         echo "ERROR: Could not checkout branch $GIT_BRANCH"
+        export SCRIPTS_DIR=""
+        export SCRIPTS_NOLOAD="1"
         return 1
     fi
 fi
@@ -45,6 +56,8 @@ if [ $(find "$TIMESTAMP_FILE" -type f -mtime +$REFRESH_INTERVAL) ] || [ "$SCRIPT
     # remove TIMESTAMP_FILE if git pull failed
     if [ $? -ne 0 ]; then
         rm "$TIMESTAMP_FILE"
+        export SCRIPTS_DIR=""
+        export SCRIPTS_NOLOAD="1"
         return 1
     fi
 fi
@@ -59,5 +72,6 @@ if [ $? -ne 0 ]; then
         # export $SCRIPTS_DIR to empty and $SCRIPTS_NOLOAD to prevent further script loading
         export SCRIPTS_DIR=""
         export SCRIPTS_NOLOAD="1"
+        return 1
     fi
 fi
